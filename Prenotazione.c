@@ -11,6 +11,8 @@ typedef enum
 
 } StatoPosto;
 
+
+
 typedef enum
 {
 
@@ -31,13 +33,13 @@ typedef enum
 // infromazioni dello studente//
 typedef struct
 {
-    char *Matricola[12];
-    char *Nome[16];
-    char *CorsoLaurea;
+    char Matricola[12];
+    char Nome[16];
+    char CorsoLaurea;
 
 } Studente;
 // nodo dell'adt lista degli studenti//
-typedef struct
+typedef struct NodoStudente
 {
 
     Studente dato;
@@ -48,7 +50,7 @@ typedef struct
 // struttura che definisce il posto prenotato nell'aula//
 typedef struct
 {
-    char *matricola[12];
+    char matricola[12];
     StatoPosto stato;
     int posti_occupati;
 } Posti;
@@ -68,36 +70,6 @@ typedef struct
    FUNZIONI LISTA
    ========================= */
 
-/* crea un nuovo nodo */
-NodoStudente *creaNodo(Studente s)
-{
-    NodoStudente *nuovo = malloc(sizeof(NodoStudente));
-
-    if (nuovo == NULL)
-    {
-        printf("Errore allocazione memoria\n");
-        return NULL;
-    }
-
-    nuovo->dato = s;
-    nuovo->next = NULL;
-
-    return nuovo;
-}
-
-/* inserimento in testa */
-NodoStudente *inserisciTesta(NodoStudente *testa, Studente s)
-{
-    NodoStudente *nuovo = creaNodo(s);
-
-    if (nuovo == NULL)
-        return testa;
-
-    nuovo->next = testa;
-    nuovo->prec=NULL;
-    return nuovo;
-}
-
 /* stampa lista */
 void stampaLista(NodoStudente *testa)
 {
@@ -107,7 +79,7 @@ void stampaLista(NodoStudente *testa)
     {
 
         printf("Nome: %s\n", corrente->dato.Nome);
-        printf("Matricola: %d\n", corrente->dato.Matricola);
+        printf("Matricola: %s\n", corrente->dato.Matricola);
         printf("------------------\n");
 
         corrente = corrente->next;
@@ -129,10 +101,7 @@ void liberaLista(NodoStudente *testa)
 
 char *get_Nome(Studente studenti)
 {
-    char *s_nome[16];
-    strcpy_s(s_nome, 16, studenti.Nome);
-
-    return s_nome;
+    return studenti.Nome;
 }
 
 char *get_matricola(Studente studenti)
@@ -143,25 +112,49 @@ char *get_matricola(Studente studenti)
     return s_matricola;
 }
 
-void Inserisci_Studente(Studente studenti)
+void Inserisci_Studente(NodoStudente *nodo, Studente studenti)
 {
 
-    scanf("%s", studenti.Nome);
-    scanf("%s", studenti.Matricola);
-    scanf("%s", studenti.CorsoLaurea);
-}
-
-Studente *cerca_Studente(Studente *studenti, char *matricola)
-{
-
-    if (strcmp(studenti->Matricola, matricola) == 0)
+    //cerca dello studente//
+   NodoStudente* nodo_temp = (NodoStudente*) malloc(sizeof(NodoStudente));
+    if(nodo_temp == NULL)
     {
-        return studenti;
+        printf("Errore allocazione memoria\n");
+        exit(0);
+    }
+
+    nodo_temp->dato = studenti;
+
+    if(nodo == NULL)
+    {
+        nodo = nodo_temp;
     }
     else
     {
-        return NULL;
+        NodoStudente* temp = nodo;
+        while(temp->next != NULL)
+        {
+            temp = temp->next;
+        }
+        temp->next = nodo_temp;
+        nodo_temp->prec = temp;
     }
+
+   
+
+}
+
+Studente* cerca_Studente(NodoStudente *testa, char *matricola)
+{
+
+   while(testa != NULL)
+    {
+        if(strcmp(testa->dato.Matricola, matricola)==0)
+            return testa;
+
+        testa = testa->next;
+    }
+    return NULL;
 }
 
 void Effettua_Prenotazione(char *matricola, char *data, OrarioAula orario, Turno *turnoAula)
@@ -218,10 +211,8 @@ void check_in_studenti(char *data,Turno turnoAula,NodoStudente* ListaStudenti)
 {
   for(int i=0;i<MAX_POSTI;i++)
   
-  {
-  if(strcmp(turnoAula->posti[i].matricola,ListaStudenti->dato[i].matricola)==0 )
-
-  }
+  
+  
 
 
 }
