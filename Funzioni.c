@@ -3,9 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "Funzioni.h"
-/*#include "lista.h"
-#include "lista.c"*/  
+//#include "Funzioni.h"//
+ 
 #define MAX_POSTI 100
 
 typedef enum
@@ -89,6 +88,8 @@ typedef struct
     struct  CodaAttesa *head;
     /// @brief Elemento precedente della lista.
     struct CodaAttesa *tail;
+    struct CodaAttesa* next;
+    
 } CodaAttesa;
 
 
@@ -177,7 +178,7 @@ void cambio_fascia_automatica(Turno* Turnoaula, CodaAttesa* coda, OrarioAula nuo
     Turnoaula->esplusi_dalla_coda = 0;
 
     // Aggiorna la fascia
-    aula->fascia = nuova_fascia;
+    Turnoaula->orario = nuova_fascia;
 
     // --- 4. Promozione automatica dalla coda:
     //         Chi aveva prenotato in anticipo per la nuova fascia ottiene
@@ -194,7 +195,7 @@ void cambio_fascia_automatica(Turno* Turnoaula, CodaAttesa* coda, OrarioAula nuo
                 /* Trova il primo posto libero */
                 int i;
                 for (i = 0; i < MAX_POSTI; i++) {
-                    if (aula->posti[i].stato == LIBERO) {
+                    if (aula->posti[i].stato == Libero) {
                         OrarioVirtuale ora_zero = {0, 0, 0};
                         aula->posti[i].stato = PRENOTATO;
                         strncpy(aula->posti[i].matricola_studente, curr->matricola, 11);
@@ -317,6 +318,18 @@ char *get_matricola(Studente studenti)
     return s_matricola;
 }
 
+Studente *cerca_Studente(NodoStudente *testa, char *matricola)
+{
+
+    while (testa != NULL)
+    {
+        if (strcmp(testa->dato.Matricola, matricola) == 0)
+            return testa;
+
+        testa = testa->next;
+    }
+    return NULL;
+}
 
 
 void Inserisci_Studente(NodoStudente *nodo, Studente s)
@@ -361,21 +374,6 @@ void Inserisci_Studente(NodoStudente *nodo, Studente s)
 
         printf("Studente aggiunto alla lista degli studenti.\n");
     }
-}
-
-
-
-Studente *cerca_Studente(NodoStudente *testa, char *matricola)
-{
-
-    while (testa != NULL)
-    {
-        if (strcmp(testa->dato.Matricola, matricola) == 0)
-            return testa;
-
-        testa = testa->next;
-    }
-    return NULL;
 }
 
 
@@ -482,6 +480,7 @@ void annulla_prenotazione(char *matricola, char *data, OrarioAula* orario, Turno
     printf("Non è stata trovata alcuna prenotazione per lo studente con matricola %s nella data %s e nell'orario %d.\n", matricola, data, orario);
 }
 
+
 void disponibilita_posti(OrarioAula* orario, Turno *turnoAula)
 {
 
@@ -499,12 +498,16 @@ void disponibilita_posti(OrarioAula* orario, Turno *turnoAula)
 
 
 
-void check_out_studenti(char *matricola, OrarioAula orario, OrarioVirtuale* orario_virtuale,time_t* ultimo_aggiornamento,Turno *turnoAula, CodaAttesa *coda)
+void check_out_studenti(char *matricola, NodoStudente* nodo,  ,OrarioAula orario, OrarioVirtuale* orario_virtuale,time_t* ultimo_aggiornamento,Turno *turnoAula, CodaAttesa *coda)
 {
-
     /*ricerca dello studente da togliere, scrivi nello storico l'uscita(aggiungendo l'ora di uscita),
     se c'è qualcuno nella coda di attesa buttacelo dentro*/
     for(int i=0;i<MAX_POSTI;i++){
+      if(cerca_Studente(nodo,matricola)==NULL)
+      {
+            printf("lo studente non è presente all'interno del ")
+
+      }
 
 
     }
@@ -514,7 +517,8 @@ void check_out_studenti(char *matricola, OrarioAula orario, OrarioVirtuale* orar
 
 
 
-void report(Turno *turnoAula, NodoStudente *ListaStudenti, CodaAttesa *coda,OrarioAula orario) {
+void report(Turno *turnoAula, NodoStudente *ListaStudenti, CodaAttesa *coda,OrarioAula orario) 
+{
   int ingressi = 0;
   int prenotazioni = 0;
   int perc_occupazione= 0;
@@ -523,36 +527,41 @@ void report(Turno *turnoAula, NodoStudente *ListaStudenti, CodaAttesa *coda,Orar
   CodaAttesa *temp_coda = coda;
 
 
-  for (int i = 0; i < MAX_POSTI; i++) {
+  for (int i = 0; i < MAX_POSTI; i++) 
+    {
    
-   if(turnoAula->posti[i].stato==Prenotato && turnoAula->orario==orario){
-    prenotazioni++;
-    if(check_in_studenti(&orario, turnoAula, ListaStudenti)){
-        ingressi++;
-    } else {
-        assenti++;
-    }
+        if(turnoAula->posti[i].stato==Prenotato && turnoAula->orario==orario)
+            {
+            prenotazioni++;
+            
+                if(check_in_studenti(&orario, turnoAula, ListaStudenti))
+                {
+                    ingressi++;
+                } 
+                    else 
+                    {
+                        assenti++;
+                    }
 
-   }
+            }
         
         
     }
     
+  while(temp_coda != NULL)
+   {
+     in_attesa++;
+     temp_coda = temp_coda->next;
+   } 
   
+     perc_occupazione= (prenotazioni * 100) / MAX_POSTI;
 
-  while(temp_coda != NULL) {
-   in_attesa++;
-    temp_coda = temp_coda->sucessivo;
-  } 
-  
-  perc_occupazione= (prenotazioni * 100) / MAX_POSTI;
-
-  printf("report:\n");
-  printf("il numero di studenti prenotati è:%d\n",prenotazioni);
-  printf("il numero di studenti in attesa è: %d\n", in_attesa);
-  printf("il humero di ingressi in questo turno è:%d ",ingressi);
-  printf("il numero di studenti non presenti è:%d\n", assenti);
-  printf("la percentuale di occupazione in questa fascia oraria è:% %d",perc_occupazione);
+     printf("report:\n");
+     printf("il numero di studenti prenotati è:%d\n",prenotazioni);
+    printf("il numero di studenti in attesa è: %d\n", in_attesa);
+     printf("il humero di ingressi in questo turno è:%d ",ingressi);
+     printf("il numero di studenti non presenti è:%d\n", assenti);
+     printf("la percentuale di occupazione in questa fascia oraria è:% %d",perc_occupazione);
 
 
 }
@@ -575,16 +584,15 @@ void leggi_storico()
 void Scrivi_storico(Turno* turnoaula,NodoStudente* ListaStudenti,CodaAttesa* coda, OrarioAula orario,time_t* adesso)
 {
 
-// da fare domani //6
+// da fare domani //
 
     FILE*  file = fopen("storico.txt","a");
     fprintf("Nome:%s \n",ListaStudenti->dato.Nome);
     fprintf("Matricola:%s\n", ListaStudenti->dato.Matricola);    
     fprintf("Corso di laurea:%s\n",ListaStudenti->dato.CorsoLaurea);
-    fprintf("");
+    fprintf("ora:%d\n",adesso);
     fprintf("/-------------------------------/");
 
-    
     printf("storico aggiornato");
     
 
