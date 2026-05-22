@@ -3,9 +3,28 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-//#include "Funzioni.h"//
- 
+#include "Funzioni.h"
+/*#include "lista.h"
+#include "lista.c"*/
 #define MAX_POSTI 100
+#define MAX_NOME 16
+#define ANNULAMENTO_PRENOTAZIONE 0
+#define FINE_TURNO 1
+
+/// @brief ADT per la lista d'attesa.
+/// @author Stefano Rosano
+typedef struct lista
+{
+    /// @brief Matricola con cui si indentifica lo studente.
+    int matricola;
+    char nome[MAX_NOME];
+    /// @brief Turno nel quale lo studente vuole prenotare l'aula studio.
+    int turno;
+    /// @brief Elemento successivo della lista.
+    struct lista *successivo;
+    /// @brief Elemento precedente della lista.
+    struct lista *precedente;
+} lista;
 
 typedef enum
 {
@@ -14,7 +33,6 @@ typedef enum
     Occupato
 
 } StatoPosto;
-
 
 typedef enum
 {
@@ -25,7 +43,6 @@ typedef enum
 
 } OrarioAula;
 
-
 typedef struct
 {
     int ora;
@@ -33,7 +50,6 @@ typedef struct
     int secondi;
 
 } OrarioVirtuale;
-
 
 // infromazioni dello studente//
 typedef struct
@@ -78,26 +94,20 @@ typedef struct
     Posti posti[MAX_POSTI];
 } Turno;
 
-
-typedef struct 
+typedef struct
 {
     /// @brief Struttura che contiene i dati dello studente.
     Studente studente;
     OrarioAula orario;
     /// @brief Elemento sucessivo della lista.
-    struct  CodaAttesa *head;
+    struct CodaAttesa *head;
     /// @brief Elemento precedente della lista.
     struct CodaAttesa *tail;
-    struct CodaAttesa* next;
-    
 } CodaAttesa;
 
-
-
-
-
-void cambio_fascia_automatica(Turno* Turnoaula, CodaAttesa* coda, OrarioAula nuova_fascia) {
-    //questa funzione fa anche da cambio turno, commentare//
+void cambio_fascia_automatica(Turno *Turnoaula, CodaAttesa *coda, OrarioAula nuova_fascia)
+{
+    // questa funzione fa anche da cambio turno, commentare//
     OrarioVirtuale ora_zero = {0, 0, 0};
 
     printf("\n[SISTEMA] Cambio fascia rilevato! Chiusura turno: %s -> %s\n",
@@ -105,11 +115,15 @@ void cambio_fascia_automatica(Turno* Turnoaula, CodaAttesa* coda, OrarioAula nuo
            (nuova_fascia == Pomeriggio ? "POMERIGGIO" : "SERA"));
 
     // --- 1. Conteggio assenti: prenotati che non si sono mai presentati ---
-    for (int i = 0; i < MAX_POSTI; i++) {
-        if (Turnoaula->posti[i].stato == Prenotato) {
+    for (int i = 0; i < MAX_POSTI; i++)
+    {
+        if (Turnoaula->posti[i].stato == Prenotato)
+        {
             Turnoaula->assenti++;
             salva_storico_accesso(NULL, Turnoaula->posti[i].matricola, "NO-SHOW (FINE TURNO)", ora_zero);
-        } else if (Turnoaula->posti[i].stato == Occupato) {
+        }
+        else if (Turnoaula->posti[i].stato == Occupato)
+        {
             // Chi era ancora dentro a fine turno: checkout forzato
             salva_storico_accesso(NULL, Turnoaula->posti[i].matricola, "CHECKOUT AUTOMATICO (FINE TURNO)", ora_zero);
         }
@@ -122,18 +136,22 @@ void cambio_fascia_automatica(Turno* Turnoaula, CodaAttesa* coda, OrarioAula nuo
     //         Chi ha prenotato per un turno futuro rimane in coda e sara' servito
     //         all'apertura del turno corrispondente.
     {
-        const char* fascia_conclusa = (Turnoaula->orario == Mattina ? "MATTINA"
-                                     : Turnoaula->orario == Pomeriggio ? "POMERIGGIO" : "SERA");
-        const char* fascia_nuova    = (nuova_fascia == Mattina ? "MATTINA"
-                                     : nuova_fascia == Pomeriggio ? "POMERIGGIO" : "SERA");
+        const char *fascia_conclusa = (Turnoaula->orario == Mattina      ? "MATTINA"
+                                       : Turnoaula->orario == Pomeriggio ? "POMERIGGIO"
+                                                                         : "SERA");
+        const char *fascia_nuova = (nuova_fascia == Mattina      ? "MATTINA"
+                                    : nuova_fascia == Pomeriggio ? "POMERIGGIO"
+                                                                 : "SERA");
         int n_espulsi = 0;
         int n_rimasti = 0;
 
-        CodaAttesa* temp_curr = coda->head;
-        CodaAttesa* temp_prec = NULL;
-        while (temp_curr != NULL) {
-            CodaAttesa* next = temp_curr->next;
-            if (temp_curr->orario == Turnoaula->orario) {
+        CodaAttesa *temp_curr = coda->head;
+        CodaAttesa *temp_prec = NULL;
+        while (temp_curr != NULL)
+        {
+            CodaAttesa *next = temp_curr->next;
+            if (temp_curr->orario == Turnoaula->orario)
+            {
                 /* Prenotato per il turno appena concluso: viene rimosso */
                 Turnoaula->esplusi_dalla_coda++;
                 n_espulsi++;
@@ -141,18 +159,24 @@ void cambio_fascia_automatica(Turno* Turnoaula, CodaAttesa* coda, OrarioAula nuo
                                       "ESPULSO DA CODA (FINE TURNO)", ora_zero);
                 printf("  [RIMOSSO] %s era in coda per %s (turno concluso).\n",
                        curr->matricola, fascia_conclusa);
-                if (prev == NULL) coda->head = next;
-                else              prev->next  = next;
-                if (coda->tail == curr) coda->tail = prev;
+                if (prev == NULL)
+                    coda->head = next;
+                else
+                    prev->next = next;
+                if (coda->tail == curr)
+                    coda->tail = prev;
                 coda->dimensione--;
                 free(curr);
-            } else {
+            }
+            else
+            {
                 /* Prenotato per un turno futuro: rimane in coda */
                 n_rimasti++;
                 printf("  [MANTENUTO] %s rimane in coda per la fascia %s.\n",
                        temp_curr->matricola,
-                       (curr->fascia == Mattina ? "MATTINA"
-                       : curr->fascia == Pomeriggio ? "POMERIGGIO" : "SERA"));
+                       (curr->fascia == Mattina      ? "MATTINA"
+                        : curr->fascia == Pomeriggio ? "POMERIGGIO"
+                                                     : "SERA"));
                 temp_prev = temp_curr;
             }
             temp_curr = next;
@@ -165,20 +189,21 @@ void cambio_fascia_automatica(Turno* Turnoaula, CodaAttesa* coda, OrarioAula nuo
     // --- 3. Reset contatori e posti per il nuovo turno ---
     {
         int i;
-        for (i = 0; i < MAX_POSTI; i++) {
+        for (i = 0; i < MAX_POSTI; i++)
+        {
             Turnoaula->posti[i].stato = Libero;
             memset(Turnoaula->posti[i].matricola, 0, 12);
         }
     }
-    Turnoaula->posti_occupati      = 0;
+    Turnoaula->posti_occupati = 0;
     Turnoaula->prenotazioni = 0;
-    Turnoaula->presenti      = 0;
-    Turnoaula->checkout     = 0;
-    Turnoaula->assenti      = 0;
+    Turnoaula->presenti = 0;
+    Turnoaula->checkout = 0;
+    Turnoaula->assenti = 0;
     Turnoaula->esplusi_dalla_coda = 0;
 
     // Aggiorna la fascia
-    Turnoaula->orario = nuova_fascia;
+    aula->fascia = nuova_fascia;
 
     // --- 4. Promozione automatica dalla coda:
     //         Chi aveva prenotato in anticipo per la nuova fascia ottiene
@@ -186,16 +211,20 @@ void cambio_fascia_automatica(Turno* Turnoaula, CodaAttesa* coda, OrarioAula nuo
     //         Vengono promossi in ordine FIFO fino a riempire i posti disponibili.
     {
         int promossi = 0;
-        NodoAttesa* curr = coda->head;
-        NodoAttesa* prev = NULL;
+        NodoAttesa *curr = coda->head;
+        NodoAttesa *prev = NULL;
 
-        while (curr != NULL && aula->posti_occupati < MAX_POSTI) {
-            NodoAttesa* next = curr->next;
-            if (curr->fascia == nuova_fascia) {
+        while (curr != NULL && aula->posti_occupati < MAX_POSTI)
+        {
+            NodoAttesa *next = curr->next;
+            if (curr->fascia == nuova_fascia)
+            {
                 /* Trova il primo posto libero */
                 int i;
-                for (i = 0; i < MAX_POSTI; i++) {
-                    if (aula->posti[i].stato == Libero) {
+                for (i = 0; i < MAX_POSTI; i++)
+                {
+                    if (aula->posti[i].stato == LIBERO)
+                    {
                         OrarioVirtuale ora_zero = {0, 0, 0};
                         aula->posti[i].stato = PRENOTATO;
                         strncpy(aula->posti[i].matricola_studente, curr->matricola, 11);
@@ -210,15 +239,20 @@ void cambio_fascia_automatica(Turno* Turnoaula, CodaAttesa* coda, OrarioAula nuo
                                (nuova_fascia == Pomeriggio ? "POMERIGGIO" : "SERA"));
 
                         /* Rimuovi il nodo dalla coda */
-                        if (prev == NULL) coda->head = next;
-                        else              prev->next  = next;
-                        if (coda->tail == curr) coda->tail = prev;
+                        if (prev == NULL)
+                            coda->head = next;
+                        else
+                            prev->next = next;
+                        if (coda->tail == curr)
+                            coda->tail = prev;
                         coda->dimensione--;
                         free(curr);
                         break;
                     }
                 }
-            } else {
+            }
+            else
+            {
                 prev = curr;
             }
             curr = next;
@@ -249,7 +283,8 @@ void cambio_fascia_automatica(Turno* Turnoaula, CodaAttesa* coda, OrarioAula nuo
  * Post: restituisce ora*3600 + minuti*60 + secondi.
  */
 
-long orario_in_secondi(OrarioVirtuale o) {
+long orario_in_secondi(OrarioVirtuale o)
+{
     return (long)o.ora * 3600 + o.minuti * 60 + o.secondi;
 }
 
@@ -258,11 +293,15 @@ long orario_in_secondi(OrarioVirtuale o) {
  * Pre:  fascia è MATTINA, POMERIGGIO o SERA.
  * Post: restituisce 1 se l'ora è nella fascia, 0 altrimenti.
  */
-int is_orario_valido(OrarioVirtuale adesso, OrarioAula orario) {
+int is_orario_valido(OrarioVirtuale adesso, OrarioAula orario)
+{
     long s = orario_in_secondi(adesso);
-    if      (orario == Mattina)    return (s >= 32400 && s <= 46800); /* 09:00-13:00 */
-    else if (orario == Pomeriggio) return (s >= 50400 && s <= 64800); /* 14:00-18:00 */
-    else if (orario == Sera)       return (s >= 64800 && s <= 79200); /* 18:00-22:00 */
+    if (orario == Mattina)
+        return (s >= 32400 && s <= 46800); /* 09:00-13:00 */
+    else if (orario == Pomeriggio)
+        return (s >= 50400 && s <= 64800); /* 14:00-18:00 */
+    else if (orario == Sera)
+        return (s >= 64800 && s <= 79200); /* 18:00-22:00 */
     return 0;
 }
 
@@ -273,20 +312,34 @@ int is_orario_valido(OrarioVirtuale adesso, OrarioAula orario) {
  * Post: ora viene aggiornata; se la fascia è cambiata viene chiamata
  *       cambio_fascia_automatica con la nuova fascia corretta.
  */
-void aggiorna_orario_automatico(OrarioVirtuale* ora, time_t* ultimo_aggiornamento, Turno* Turnoaula) {
-    time_t  adesso = time(NULL);
-    double  secondi_trascorsi = difftime(adesso, *ultimo_aggiornamento);
+void aggiorna_orario_automatico(OrarioVirtuale *ora, time_t *ultimo_aggiornamento, Turno *Turnoaula)
+{
+    time_t adesso = time(NULL);
+    double secondi_trascorsi = difftime(adesso, *ultimo_aggiornamento);
 
-    if (secondi_trascorsi < 1.0) return;
+    if (secondi_trascorsi < 1.0)
+        return;
 
     /* Avanza l'orologio virtuale secondo per secondo (120x) */
     int secondi_virtuali = (int)secondi_trascorsi * 120;
     int i;
-    for (i = 0; i < secondi_virtuali; i++) {
+    for (i = 0; i < secondi_virtuali; i++)
+    {
         ora->secondi++;
-        if (ora->secondi >= 60) { ora->secondi = 0; ora->minuti++;  }
-        if (ora->minuti  >= 60) { ora->minuti  = 0; ora->ora++;     }
-        if (ora->ora     >= 24) { ora->ora     = 0;                 }
+        if (ora->secondi >= 60)
+        {
+            ora->secondi = 0;
+            ora->minuti++;
+        }
+        if (ora->minuti >= 60)
+        {
+            ora->minuti = 0;
+            ora->ora++;
+        }
+        if (ora->ora >= 24)
+        {
+            ora->ora = 0;
+        }
     }
 
     *ultimo_aggiornamento = adesso;
@@ -298,13 +351,10 @@ void aggiorna_orario_automatico(OrarioVirtuale* ora, time_t* ultimo_aggiornament
         cambio_fascia_automatica(Turnoaula, Sera);
 }
 
-
 /* =========================
    FUNZIONI LISTA STUDENTI
    ========================= */
 
-
-   
 char *get_Nome(Studente studenti)
 {
     return studenti.Nome;
@@ -330,7 +380,6 @@ Studente *cerca_Studente(NodoStudente *testa, char *matricola)
     }
     return NULL;
 }
-
 
 void Inserisci_Studente(NodoStudente *nodo, Studente s)
 {
@@ -377,8 +426,6 @@ void Inserisci_Studente(NodoStudente *nodo, Studente s)
 }
 
 
-
-
 void crea_studente(Studente *s, char *matricola, char *nome, char corsoLaurea)
 {
     strcpy(s->Matricola, matricola);
@@ -386,22 +433,18 @@ void crea_studente(Studente *s, char *matricola, char *nome, char corsoLaurea)
     s->CorsoLaurea = corsoLaurea;
 }
 
-
-
 /* =========================
-   FUNZIONI GESTIONE PRENOTAZIONI 
+   FUNZIONI GESTIONE PRENOTAZIONI
    ========================= */
 
-
-void Effettua_Prenotazione(char *matricola, OrarioAula* orario, Turno *turnoAula, CodaAttesa *coda)
+void Effettua_Prenotazione(char *matricola, OrarioAula *orario, Turno *turnoAula, CodaAttesa *coda)
 {
     /* controllo se la matricola esiste già, caso negativo deve fare la registrazione e procede alla prenotazione*/
-
 
     if (turnoAula->posti_occupati >= MAX_POSTI)
     {
         printf("Non ci sono posti disponibili per questo turno.Verrai spostato nellal ista d'attesa\n");
-        //funzione che aggiunge in lista d'attesa lo studnete//
+        // funzione che aggiunge in lista d'attesa lo studnete//
 
         return;
     }
@@ -421,23 +464,14 @@ void Effettua_Prenotazione(char *matricola, OrarioAula* orario, Turno *turnoAula
                 turnoAula->posti_occupati++;
                 printf("Prenotazione effettuata con successo per lo studente con matricola %s\n", matricola);
             }
-
-     
-            
         }
-
-
-
     }
 }
 
-
-
-
-int check_in_studenti(OrarioAula* orario, Turno* turnoAula, NodoStudente *ListaStudenti,time_t* tempo)
+int check_in_studenti(OrarioAula *orario, Turno *turnoAula, NodoStudente *ListaStudenti, time_t *tempo)
 {
-   /* controllo se esiste gia la matricola, se non esiste fa la registrazione, se c'è un posto libero lo butto dentro
-   altrimenti va in coda attesa*/
+    /* controllo se esiste gia la matricola, se non esiste fa la registrazione, se c'è un posto libero lo butto dentro
+    altrimenti va in coda attesa*/
     for (int i = 0; i < MAX_POSTI; i++)
     {
         if (turnoAula->orario == *orario && turnoAula->posti[i].stato == Prenotato)
@@ -462,10 +496,9 @@ int check_in_studenti(OrarioAula* orario, Turno* turnoAula, NodoStudente *ListaS
     }
 }
 
-
 // gestione della stampa della lsta studenti da fare//
 
-void annulla_prenotazione(char *matricola, char *data, OrarioAula* orario, Turno *turnoAula)
+void annulla_prenotazione(char *matricola, char *data, OrarioAula *orario, Turno *turnoAula)
 {
     for (int i = 0; i < MAX_POSTI; i++)
     {
@@ -480,8 +513,7 @@ void annulla_prenotazione(char *matricola, char *data, OrarioAula* orario, Turno
     printf("Non è stata trovata alcuna prenotazione per lo studente con matricola %s nella data %s e nell'orario %d.\n", matricola, data, orario);
 }
 
-
-void disponibilita_posti(OrarioAula* orario, Turno *turnoAula)
+void disponibilita_posti(OrarioAula *orario, Turno *turnoAula)
 {
 
     if (turnoAula->orario == *orario)
@@ -493,111 +525,417 @@ void disponibilita_posti(OrarioAula* orario, Turno *turnoAula)
     {
         printf("Non ci sono prenotazioni per e l'orario %d.\n", *orario);
     }
-
 }
 
-
-
-void check_out_studenti(char *matricola, NodoStudente* nodo,  ,OrarioAula orario, OrarioVirtuale* orario_virtuale,time_t* ultimo_aggiornamento,Turno *turnoAula, CodaAttesa *coda)
+void check_out_studenti(char *matricola, OrarioAula orario, OrarioVirtuale *orario_virtuale, time_t *ultimo_aggiornamento, Turno *turnoAula, CodaAttesa *coda)
 {
+
     /*ricerca dello studente da togliere, scrivi nello storico l'uscita(aggiungendo l'ora di uscita),
     se c'è qualcuno nella coda di attesa buttacelo dentro*/
-    for(int i=0;i<MAX_POSTI;i++){
-      if(cerca_Studente(nodo,matricola)==NULL)
+    for (int i = 0; i < MAX_POSTI; i++)
+    { 
+        if(cerca_Studente(nodo,matricola)==NULL)
       {
             printf("lo studente non è presente all'interno del ")
 
       }
-
-
     }
-
 }
 
-
-
-
-void report(Turno *turnoAula, NodoStudente *ListaStudenti, CodaAttesa *coda,OrarioAula orario) 
+void report(Turno *turnoAula, NodoStudente *ListaStudenti, CodaAttesa *coda, OrarioAula orario)
 {
-  int ingressi = 0;
-  int prenotazioni = 0;
-  int perc_occupazione= 0;
-  int assenti = 0;
-  int in_attesa= 0;
-  CodaAttesa *temp_coda = coda;
+    int ingressi = 0;
+    int prenotazioni = 0;
+    int perc_occupazione = 0;
+    int assenti = 0;
+    int in_attesa = 0;
+    CodaAttesa *temp_coda = coda;
 
-
-  for (int i = 0; i < MAX_POSTI; i++) 
+    for (int i = 0; i < MAX_POSTI; i++)
     {
-   
-        if(turnoAula->posti[i].stato==Prenotato && turnoAula->orario==orario)
-            {
+
+        if (turnoAula->posti[i].stato == Prenotato && turnoAula->orario == orario)
+        {
             prenotazioni++;
-            
-                if(check_in_studenti(&orario, turnoAula, ListaStudenti))
-                {
-                    ingressi++;
-                } 
-                    else 
-                    {
-                        assenti++;
-                    }
-
+            if (check_in_studenti(&orario, turnoAula, ListaStudenti))
+            {
+                ingressi++;
             }
-        
-        
+            else
+            {
+                assenti++;
+            }
+        }
     }
-    
-  while(temp_coda != NULL)
-   {
-     in_attesa++;
-     temp_coda = temp_coda->next;
-   } 
-  
-     perc_occupazione= (prenotazioni * 100) / MAX_POSTI;
 
-     printf("report:\n");
-     printf("il numero di studenti prenotati è:%d\n",prenotazioni);
+    while (temp_coda != NULL)
+    {
+        in_attesa++;
+        temp_coda = temp_coda->sucessivo;
+    }
+
+    perc_occupazione = (prenotazioni * 100) / MAX_POSTI;
+
+    printf("report:\n");
+    printf("il numero di studenti prenotati è:%d\n", prenotazioni);
     printf("il numero di studenti in attesa è: %d\n", in_attesa);
-     printf("il humero di ingressi in questo turno è:%d ",ingressi);
-     printf("il numero di studenti non presenti è:%d\n", assenti);
-     printf("la percentuale di occupazione in questa fascia oraria è:% %d",perc_occupazione);
-
-
+    printf("il humero di ingressi in questo turno è:%d ", ingressi);
+    printf("il numero di studenti non presenti è:%d\n", assenti);
+    printf("la percentuale di occupazione in questa fascia oraria è:% %d", perc_occupazione);
 }
-
 
 void leggi_storico()
 {
-   FILE* file = fopen("storico.txt","r");
-    char* riga;
-    size_t len=0;
-    while (getLine(&riga,&len,file)!= -1)
-   {
-    printf("%s",riga);
-   }    
-
+    FILE *file = fopen("storico.txt", "r");
+    char *riga;
+    size_t len = 0;
+    while (getLine(&riga, &len, file) != -1)
+    {
+        printf("%s", riga);
+    }
 }
 
-
-
-void Scrivi_storico(Turno* turnoaula,NodoStudente* ListaStudenti,CodaAttesa* coda, OrarioAula orario,time_t* adesso)
+void Scrivi_storico(Turno *turnoaula, NodoStudente *ListaStudenti, CodaAttesa *coda, OrarioAula orario, time_t *adesso)
 {
 
-// da fare domani //
+    // da fare domani //6
 
-    FILE*  file = fopen("storico.txt","a");
-    fprintf("Nome:%s \n",ListaStudenti->dato.Nome);
-    fprintf("Matricola:%s\n", ListaStudenti->dato.Matricola);    
-    fprintf("Corso di laurea:%s\n",ListaStudenti->dato.CorsoLaurea);
-    fprintf("ora:%d\n",adesso);
-    fprintf("/-------------------------------/");
+    FILE *file = fopen("storico.txt", "a");
+    fprintf(file, "Nome:%s \n", ListaStudenti->dato.Nome);
+    fprintf(file, "Matricola:%s\n", ListaStudenti->dato.Matricola);
+    fprintf(file, "Corso di laurea:%s\n", ListaStudenti->dato.CorsoLaurea);
+    fprintf(file, " ");
+    fprintf(file, "/-------------------------------/");
 
     printf("storico aggiornato");
-    
-
-    
-
 }
 
+/// @brief Cancella un elemento nella lista mantendeo i collegamenti.
+/// @param Lista Indirizzo dell'elemento da cancellare.
+/// @return Restituisce l'elemento successivo a quello che è stato eliminato se esiste, altrimenti l'elemento precedente.
+/// @author Stefano Rosano
+lista *cancella(lista *elemento)
+{
+    if (elemento->precedente == NULL && elemento->successivo == NULL)
+    {
+        free(elemento);
+        return NULL;
+    }
+    else if (elemento->successivo == NULL)
+    {
+        elemento = elemento->precedente;
+        free(elemento->successivo);
+        elemento->successivo = NULL;
+        return elemento;
+    }
+    else if (elemento->precedente == NULL)
+    {
+        elemento = elemento->successivo;
+        free(elemento->precedente);
+        elemento->precedente = NULL;
+        return elemento;
+    }
+    else
+    {
+        lista *temp;
+        temp = elemento->successivo;
+        elemento = elemento->precedente;
+        free(elemento->successivo);
+        elemento->successivo = temp;
+        temp = elemento;
+        elemento = elemento->successivo;
+        elemento->precedente = temp;
+        return elemento;
+    }
+}
 
+/// @brief Permetti di tornare indetro al primo elemento della lista.
+/// @param Lista Consiste nella lista da poter navigare.
+/// @return L'indirizzo del primo elemento nella lista.
+/// @author Stefano Rosano
+lista *cima_lista(lista *elemento)
+{
+    while (elemento->precedente != NULL)
+    {
+        if (elemento->precedente != NULL)
+        {
+            elemento = elemento->precedente;
+        }
+    }
+    return elemento;
+}
+
+/// @brief Questa funzione si preoccupa di cercare gli elementi da eliminare.
+/// @param Lista Lista in cui cercare gli elemnti da eliminare.
+/// @param Motivo Indica il criterio che deve seguire per la eliminazione.
+/// @param Matricola Matricola di cui annullare la prenotazione.
+/// @param Turno Turno di cui cancellare le persone rimaste in lista d'attesa.
+/// @return Restituisce la lista modificata.
+/// @author Stefano Rosano
+lista *rimozione_elementi(lista *parte, int motivo, int matricola, int turno)
+{
+    switch (motivo)
+    {
+    case ANNULAMENTO_PRENOTAZIONE:
+    {
+        int termine = 0;
+        parte = cima_lista(parte);
+        while (termine == 0)
+        {
+            if (parte->matricola == matricola)
+            {
+                cancella(parte);
+                termine = 1;
+            }
+            if (parte->successivo == NULL && termine != 1)
+            {
+                termine = 2;
+            }
+            parte = parte->successivo;
+        }
+        switch (termine)
+        {
+        case 1:
+            printf("La sua prenotazione e' stata rimossa con successo!\n");
+            break;
+        case 2:
+            printf("La sua prenotazione non esiste.\n");
+            break;
+        default:
+            // Toricamente questo caso non è possibile, poiche sono dei valori gestiti internamente.
+            break;
+        }
+        return parte;
+    }
+    break;
+    case FINE_TURNO:
+    {
+        lista *tmp;
+        int fine = 0;
+        parte = cima_lista(parte);
+        do
+        {
+            tmp = parte->successivo;
+            if (parte->turno == turno)
+            {
+                parte = cancella(parte);
+            }
+            if (parte == NULL || parte->successivo == NULL && tmp == NULL)
+            {
+                fine = 1;
+            }
+            else if (parte->successivo != NULL)
+            {
+                parte = parte->successivo;
+            }
+        } while (fine == 0);
+        return parte;
+    }
+    break;
+    default:
+        // Non gestito perché essendo una funzione gestita internamente, non può avere valori non previsti.
+        return NULL;
+        break;
+    }
+}
+
+/// @brief Permette di annullare una prenotazione.
+/// @param Lista Lista da cui annullare la prenotazione.
+/// @param Matricola Matricola di cui annullare la prenotazione.
+/// @return Inizio della lista d'attesa con le eliminazioni effettuate.
+/// @author Stefano Rosano
+lista *elim_preontazione(lista *parte, int matricola)
+{
+    if (parte == NULL)
+    {
+        return NULL;
+    }
+    parte = rimozione_elementi(parte, ANNULAMENTO_PRENOTAZIONE, matricola, 0);
+    if (parte == NULL)
+    {
+        return NULL;
+    }
+    return cima_lista(parte);
+}
+
+/// @brief Permette di cancellare le prenotazioni del turno appena concluso.
+/// @param Lista Lista da cui annullare la prenotazione.
+/// @param Turno Indica il turno di cui bisogna cancellare le prenotazioni.
+/// @return Inizio della lista d'attesa con le eliminazioni effettuate.
+/// @author Stefano Rosano
+lista *chiudi_turno(lista *parte, int turno)
+{
+    if (parte == NULL)
+    {
+        return NULL;
+    }
+    parte = rimozione_elementi(parte, FINE_TURNO, 0, turno);
+    if (parte == NULL)
+    {
+        return NULL;
+    }
+    return cima_lista(parte);
+}
+
+/// @brief Cancella completamente la lista
+/// @param Lista Lista da eliminare complletamente
+/// @author Stefano Rosano
+void cancella_lista(lista *parte)
+{
+    while (parte != NULL)
+    {
+        parte = cancella(parte);
+    }
+}
+
+/// @brief Permentte di inizializzare una lista
+/// @return Restituisce il primo elemento di una lista
+/// @author Stefano Rosano
+lista *inizializza_lista()
+{
+    lista *parte = (lista *)malloc(sizeof(lista));
+    parte->matricola = 0;
+    parte->precedente = NULL;
+    parte->successivo = NULL;
+    parte->turno = 0;
+    return parte;
+}
+
+/// @brief Genera un nuovo elemento vergine della lista
+/// @param Lista Lista in cui bisogna aggiungere un pezzo
+/// @return Restituisce l'inidirizzo dell'elemento nuovo
+/// @author Stefano Rosano
+lista *nuovo_elemento(lista *parte)
+{
+    if (parte == NULL)
+    {
+        return inizializza_lista();
+    }
+    while (parte->successivo != NULL)
+    {
+        parte = parte->successivo;
+    }
+    lista *tmp = parte;
+    parte->successivo = (lista *)malloc(sizeof(lista));
+    parte = parte->successivo;
+    parte->successivo = NULL;
+    parte->precedente = tmp;
+    parte->matricola = 0;
+    parte->turno = 0;
+    return parte;
+}
+
+/// @brief Permette di aggiungere una nuova prenotazione alla coda
+/// @param Lista Lista in cui aggiungere il nuovo elemento
+/// @param Nome Nome dello studente che sta effettuando la prenotazione
+/// @param Turno Turno nel quale si sta prenotando lo studente
+/// @param Matricola Matricola dello studente
+/// @return Restituisce l'indirizzo del nuovo elemento salvato nella lista d'attesa
+/// @author Stefano Rosano
+lista *nuova_aggiunta(lista *parte, char *nome, int turno, int matricola)
+{
+    if (parte != NULL)
+    {
+        if (parte->nome != NULL && parte->matricola != 0 && parte->turno != 0)
+        {
+            parte = nuovo_elemento(parte);
+        }
+    }
+    else
+    {
+        parte = nuovo_elemento(parte);
+    }
+    strcpy_s(parte->nome, MAX_NOME, nome);
+    parte->turno = turno;
+    parte->matricola = matricola;
+    return parte;
+}
+
+/// @brief Permette di vedere tutti gli studenti in coda
+/// @param Lista Lista dalla quale stampare gli studenti
+/// @author Stefano Rosano
+void visualizza_lista(lista *elemento)
+{
+    int termina = 0;
+    elemento = cima_lista(elemento);
+    printf("------\n");
+    do
+    {
+        printf("Nome: %s\n", elemento->nome);
+        printf("Matricola: %d\n", elemento->matricola);
+        printf("Turno: %d\n", elemento->turno);
+        printf("------\n");
+        if (elemento->successivo != NULL)
+        {
+            elemento = elemento->successivo;
+        }
+        else
+        {
+            termina = 1;
+        }
+    } while (termina != 1);
+}
+
+/// @brief Cerca uno studente con una specifica matricola
+/// @param Lista Lista da cui cercare lo studente
+/// @param matricola Matricola da cercare
+/// @return Restiuisce il puntatore all'elemento con lo studente desiderato, se fallisce restituisce la cima della lista
+/// @author Stefano Rosano
+lista *cerca(lista *elemento, int matricola)
+{
+    int presente = 0;
+    elemento = cima_lista(elemento);
+    do
+    {
+        if (elemento->matricola == matricola)
+        {
+            presente = 1;
+        }
+        else
+        {
+            elemento = elemento->successivo;
+        }
+    } while (elemento->successivo != NULL && presente == 0);
+    if (presente == 1)
+    {
+        return elemento;
+    }
+    printf("Non è stato trovato lo studente!\n");
+    return cima_lista(elemento);
+}
+
+/// @brief Calcola il numero di studneti in attesa
+/// @param Lista Lista id cui calcolare gli studenti in attesa
+/// @return Restituisce un intero che indica il numero di studenti in attesa
+/// @author Stefano Rosano
+int qta_in_attesa(lista *elemento)
+{
+    int qta = 0;
+    do
+    {
+        qta++;
+        if (elemento->successivo != NULL)
+        {
+            elemento = elemento->successivo;
+        }
+    } while (elemento->successivo != NULL);
+    return qta;
+}
+
+/// @brief Permette di vedere la matricola dello studente nel punto dato della lista
+/// @param Lista Elemento di cui vedere la matricola
+/// @return Matricola dello studente in data posizione della lista
+/// @author Stefano Rosano
+int ricevi_matricola(lista *elemento)
+{
+    return elemento->matricola;
+}
+
+/// @brief Permette di vedere il turno per cui lo studente si è prenotato nel punto dato della lista
+/// @param Lista Elemento di cui vedere il turno
+/// @return Turno in cui lo studente si è prenotato in data posizione della lista
+/// @author Stefano Rosano
+int ricevi_turno(lista *elemento)
+{
+    return elemento->turno;
+}
