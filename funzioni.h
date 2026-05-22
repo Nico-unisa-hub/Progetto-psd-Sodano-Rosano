@@ -1,0 +1,16 @@
+enum StatoPosto;
+enum OrarioAula;
+enum StatoStudente;
+typedef struct Studente;
+typedef struct NodoStudente;
+typedef struct Posti;
+typedef struct Turno;
+char *get_Nome(Studente );
+char *get_matricola(Studente );
+void Inserisci_Studente(NodoStudente *);
+Studente *cerca_Studente(NodoStudente *, char *);
+void Effettua_Prenotazione(char *, char *, OrarioAula , Turno *);
+void stampa_turno(char *, OrarioAula , Turno );
+void check_in_studenti(char *, Turno, NodoStudente *);
+void annulla_prenotazione(char *, char *, OrarioAula , Turno *);
+void disponibilita_posti(OrarioAula , Turno );
