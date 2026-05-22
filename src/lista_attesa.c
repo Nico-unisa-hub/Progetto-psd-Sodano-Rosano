@@ -7,6 +7,7 @@
 #define FINE_TURNO 1
 
 /// @brief ADT per la lista d'attesa.
+/// @author Stefano Rosano
 typedef struct lista
 {
     /// @brief Matricola con cui si indentifica lo studente.
@@ -23,6 +24,7 @@ typedef struct lista
 /// @brief Cancella un elemento nella lista mantendeo i collegamenti.
 /// @param Lista Indirizzo dell'elemento da cancellare.
 /// @return Restituisce l'elemento successivo a quello che è stato eliminato se esiste, altrimenti l'elemento precedente.
+/// @author Stefano Rosano
 lista *cancella(lista *elemento)
 {
     if (elemento->precedente == NULL && elemento->successivo == NULL)
@@ -61,6 +63,7 @@ lista *cancella(lista *elemento)
 /// @brief Permetti di tornare indetro al primo elemento della lista.
 /// @param Lista Consiste nella lista da poter navigare.
 /// @return L'indirizzo del primo elemento nella lista.
+/// @author Stefano Rosano
 lista *cima_lista(lista *elemento)
 {
     while (elemento->precedente != NULL)
@@ -79,6 +82,7 @@ lista *cima_lista(lista *elemento)
 /// @param Matricola Matricola di cui annullare la prenotazione.
 /// @param Turno Turno di cui cancellare le persone rimaste in lista d'attesa.
 /// @return Restituisce la lista modificata.
+/// @author Stefano Rosano
 lista *rimozione_elementi(lista *parte, int motivo, int matricola, int turno)
 {
     switch (motivo)
@@ -150,6 +154,7 @@ lista *rimozione_elementi(lista *parte, int motivo, int matricola, int turno)
 /// @param Lista Lista da cui annullare la prenotazione.
 /// @param Matricola Matricola di cui annullare la prenotazione.
 /// @return Inizio della lista d'attesa con le eliminazioni effettuate.
+/// @author Stefano Rosano
 lista *elim_preontazione(lista *parte, int matricola)
 {
     if (parte == NULL)
@@ -168,6 +173,7 @@ lista *elim_preontazione(lista *parte, int matricola)
 /// @param Lista Lista da cui annullare la prenotazione.
 /// @param Turno Indica il turno di cui bisogna cancellare le prenotazioni.
 /// @return Inizio della lista d'attesa con le eliminazioni effettuate.
+/// @author Stefano Rosano
 lista *chiudi_turno(lista *parte, int turno)
 {
     if (parte == NULL)
@@ -184,6 +190,7 @@ lista *chiudi_turno(lista *parte, int turno)
 
 /// @brief Cancella completamente la lista
 /// @param Lista Lista da eliminare complletamente
+/// @author Stefano Rosano
 void cancella_lista(lista *parte)
 {
     while (parte != NULL)
@@ -194,6 +201,7 @@ void cancella_lista(lista *parte)
 
 /// @brief Permentte di inizializzare una lista
 /// @return Restituisce il primo elemento di una lista
+/// @author Stefano Rosano
 lista *inizializza_lista()
 {
     lista *parte = (lista *)malloc(sizeof(lista));
@@ -207,6 +215,7 @@ lista *inizializza_lista()
 /// @brief Genera un nuovo elemento vergine della lista
 /// @param Lista Lista in cui bisogna aggiungere un pezzo
 /// @return Restituisce l'inidirizzo dell'elemento nuovo
+/// @author Stefano Rosano
 lista *nuovo_elemento(lista *parte)
 {
     if (parte == NULL)
@@ -233,6 +242,7 @@ lista *nuovo_elemento(lista *parte)
 /// @param Turno Turno nel quale si sta prenotando lo studente
 /// @param Matricola Matricola dello studente
 /// @return Restituisce l'indirizzo del nuovo elemento salvato nella lista d'attesa
+/// @author Stefano Rosano
 lista *nuova_aggiunta(lista *parte, char *nome, int turno, int matricola)
 {
     if (parte != NULL)
@@ -254,6 +264,7 @@ lista *nuova_aggiunta(lista *parte, char *nome, int turno, int matricola)
 
 /// @brief Permette di vedere tutti gli studenti in coda
 /// @param Lista Lista dalla quale stampare gli studenti
+/// @author Stefano Rosano
 void visualizza_lista(lista *elemento)
 {
     int termina = 0;
@@ -280,6 +291,7 @@ void visualizza_lista(lista *elemento)
 /// @param Lista Lista da cui cercare lo studente
 /// @param matricola Matricola da cercare
 /// @return Restiuisce il puntatore all'elemento con lo studente desiderato, se fallisce restituisce la cima della lista
+/// @author Stefano Rosano
 lista *cerca(lista *elemento, int matricola)
 {
     int presente = 0;
@@ -306,6 +318,7 @@ lista *cerca(lista *elemento, int matricola)
 /// @brief Calcola il numero di studneti in attesa
 /// @param Lista Lista id cui calcolare gli studenti in attesa
 /// @return Restituisce un intero che indica il numero di studenti in attesa
+/// @author Stefano Rosano
 int qta_in_attesa(lista *elemento)
 {
     int qta = 0;
@@ -323,11 +336,16 @@ int qta_in_attesa(lista *elemento)
 /// @brief Permette di vedere la matricola dello studente nel punto dato della lista
 /// @param Lista Elemento di cui vedere la matricola
 /// @return Matricola dello studente in data posizione della lista
+/// @author Stefano Rosano
 int ricevi_matricola(lista *elemento)
 {
     return elemento->matricola;
 }
 
+/// @brief Permette di vedere il turno per cui lo studente si è prenotato nel punto dato della lista
+/// @param Lista Elemento di cui vedere il turno
+/// @return Turno in cui lo studente si è prenotato in data posizione della lista
+/// @author Stefano Rosano
 int ricevi_turno(lista *elemento)
 {
     return elemento->turno;
