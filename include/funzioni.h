@@ -26,8 +26,8 @@ void cambio_fascia_automatica(Turno *,NodoStudente *, CodaAttesa *, OrarioAula )
 long orario_in_secondi(OrarioVirtuale );
 int is_orario_valido(OrarioVirtuale , OrarioAula );
 void aggiorna_orario_automatico(OrarioVirtuale *, time_t *, Turno *, CodaAttesa *, NodoStudente *);
-void inizializza_sistema(NodoStudente *,Turno* , CodaAttesa* ); 
-void inizializza_sistema_dinamico(NodoStudente** , Turno** , CodaAttesa** );
+void inizializza_strutture(NodoStudente *,Turno* , CodaAttesa* ); 
+void alloca_memoria_strutture(NodoStudente** , Turno** , CodaAttesa** );
 
 
 

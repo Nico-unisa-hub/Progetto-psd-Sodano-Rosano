@@ -1,3 +1,55 @@
+/*
+ * ============================================================================
+ * FILE: funzioni_commenti_completi.c
+ * ============================================================================
+ * SISTEMA GESTIONE AULA STUDIO
+ * ============================================================================
+ *
+ * Questo file implementa le principali funzionalità del sistema:
+ *
+ * - gestione studenti;
+ * - prenotazione posti;
+ * - check-in/check-out;
+ * - gestione fasce orarie;
+ * - gestione lista d'attesa;
+ * - simulazione orario virtuale;
+ * - salvataggio storico operazioni;
+ * - report statistici.
+ *
+ * Tutte le funzioni sono commentate seguendo le best practices:
+ *
+ * - descrizione dello scopo della funzione;
+ * - spiegazione della logica implementata;
+ * - descrizione dei parametri;
+ * - descrizione del valore restituito;
+ * - note sul comportamento del codice.
+ *
+ * ============================================================================
+ */
+
+/*
+ * ============================================================================
+ * FILE COMMENTATO AUTOMATICAMENTE
+ * ============================================================================
+ * Questo file contiene le funzioni del sistema di gestione aula studio.
+ *
+ * OBIETTIVI DEL SISTEMA:
+ * - gestione studenti;
+ * - prenotazione posti;
+ * - gestione fasce orarie;
+ * - simulazione orario virtuale;
+ * - gestione code d'attesa;
+ * - salvataggio storico accessi.
+ *
+ * I commenti seguono le best practices del PDF fornito:
+ * - descrizione dello scopo delle funzioni;
+ * - spiegazione parametri;
+ * - valori di ritorno;
+ * - note implementative;
+ * - miglioramento della leggibilità del codice.
+ * ============================================================================
+ */
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,9 +69,65 @@
    ========================= */
 
 
+/*
+ * Scrive le informazioni nello storico accessi.
+ *
+ * Lo storico viene salvato su file per
+ * mantenere traccia delle operazioni effettuate
+ * nel sistema aula studio.
+ */
+
+/*
+ * ============================================================================
+ * FUNZIONE: Scrivi_storico
+ * ============================================================================
+ * Salva le operazioni effettuate nel file storico.
+ *
+ * SCOPO:
+ * Memorizzare permanentemente le attività svolte
+ * dagli studenti nel sistema.
+ *
+ * LOGICA:
+ * - apre il file storico;
+ * - salva data e orario;
+ * - registra operazione e matricola;
+ * - chiude il file.
+ *
+ * PARAMETRI:
+ * - ListaStudenti:
+ *   lista studenti.
+ *
+ * - matricola:
+ *   studente associato all'operazione.
+ *
+ * - operazione:
+ *   descrizione dell'azione eseguita.
+ *
+ * - ora:
+ *   orario virtuale dell'operazione.
+ *
+ * ============================================================================
+ */
+
 void Scrivi_storico(NodoStudente *ListaStudenti,char*matricola,char* operazione,OrarioVirtuale ora);
 
 
+
+
+/* ============================================================================
+ * STRUTTURE DATI PRINCIPALI
+ * ============================================================================
+ * Questa sezione definisce:
+ * - studenti;
+ * - posti aula;
+ * - turni;
+ * - orario virtuale;
+ * - code di attesa.
+ *
+ * Le strutture rappresentano il modello logico
+ * utilizzato dal sistema gestionale.
+ * ============================================================================
+ */
 
 typedef enum
 {
@@ -123,18 +231,17 @@ typedef struct
    FUNZIONI LISTA STUDENTI
    ========================= */
 
-char *get_Nome(Studente studenti)
-{
-    return studenti.Nome;
-}
-
-char *get_matricola(Studente* studenti)
-{
-    char *s_matricola[12];
-    strncpy(s_matricola, studenti->Matricola, 11);
-    return s_matricola;
-}
-
+/*
+ * Cerca uno studente tramite matricola.
+ *
+ * PARAMETRI:
+ * - lista studenti;
+ * - matricola ricercata.
+ *
+ * RITORNO:
+ * - puntatore allo studente trovato;
+ * - NULL se assente.
+ */
 Studente *cerca_Studente(NodoStudente *testa, char *matricola)
 {
 
@@ -147,6 +254,31 @@ Studente *cerca_Studente(NodoStudente *testa, char *matricola)
     }
     return NULL;
 }
+
+
+/*
+ * ============================================================================
+ * FUNZIONE: Inserisci_Studente
+ * ============================================================================
+ * Inserisce uno studente nella lista degli studenti registrati.
+ *
+ * SCOPO:
+ * Memorizzare nel sistema un nuovo studente evitando duplicati.
+ *
+ * LOGICA:
+ * - controlla se la matricola esiste già;
+ * - crea un nuovo nodo;
+ * - collega il nodo alla lista concatenata.
+ *
+ * PARAMETRI:
+ * - nodo:
+ *   testa della lista studenti.
+ *
+ * - s:
+ *   studente da inserire.
+ *
+ * ============================================================================
+ */
 
 void Inserisci_Studente(NodoStudente *nodo, Studente s)
 {
@@ -192,6 +324,37 @@ void Inserisci_Studente(NodoStudente *nodo, Studente s)
 }
 
 
+
+/*
+ * ============================================================================
+ * FUNZIONE: crea_studente
+ * ============================================================================
+ * Crea e inizializza una nuova struttura Studente.
+ *
+ * SCOPO:
+ * Inizializzare correttamente tutti i campi dello studente
+ * prima dell'inserimento nel sistema.
+ *
+ * PARAMETRI:
+ * - matricola:
+ *   identificativo univoco dello studente.
+ *
+ * - nome:
+ *   nome dello studente.
+ *
+ * - corsoLaurea:
+ *   corso di laurea frequentato.
+ *
+ * VALORE RESTITUITO:
+ * - struttura Studente inizializzata.
+ *
+ * NOTE:
+ * La funzione utilizza copie sicure delle stringhe
+ * per evitare overflow di memoria.
+ *
+ * ============================================================================
+ */
+
 Studente crea_studente(char* matricola, char *nome, char* corsoLaurea)
 {   Studente studente;
     strncpy(studente.Matricola,matricola,MAX_MATRICOLA - 1);
@@ -226,55 +389,96 @@ void Registra_Studente(NodoStudente* lista,char* nome,char* matricola, char* cor
    FUNZIONI GESTIONE PRENOTAZIONI
    ========================= */
 
-void Effettua_Prenotazione(char *matricola, char *data, OrarioAula *orario, Turno *turnoAula,NodoStudente* s, CodaAttesa *coda)
-{
-    for(int i=0;i<MAX_POSTI;i++)
-    {
-        if(strcmp(turnoAula->posti[i].matricola,matricola)!=0)
+void effettua_prenotazione(NodoStudente* ListaStudenti, Turno* turnoaAula, CodaAttesa* coda, char* matricola, OrarioAula fascia_scelta, OrarioVirtuale ora_attuale) {
+    int i;
 
-        {
-          printf("Lo studente non è registrato all'interno dell'elenco, per effettuare una prenotazione è necessaria registrazione");
-
-
-
-        }
-
-    }
-    /* controllo se la matricola esiste già, caso negativo deve fare la registrazione e procede alla prenotazione*/
-
-    if (turnoAula->posti_occupati >= MAX_POSTI)
-    {
-        printf("Non ci sono posti disponibili per questo turno.Verrai spostato nellal ista d'attesa\n");
-        // funzione che aggiunge in lista d'attesa lo studnete//
-
+    if (cerca_studente(ListaStudenti, matricola) == NULL) {
+        printf("[ERRORE] Matricola %s non registrata. Impossibile prenotare.\n", matricola);
         return;
     }
-    else
+
+    if (fascia_scelta < turnoaAula->orario) {
+        printf("[ERRORE] La fascia %s e' gia' conclusa. Puoi prenotare solo per %s o turni successivi.\n",
+               (fascia_scelta == Mattina ? "MATTINA" : (fascia_scelta == Pomeriggio ? "POMERIGGIO" : "SERA")),
+               (turnoaAula->orario == Mattina ? "MATTINA" : (turnoaAula->orario == Pomeriggio ? "POMERIGGIO" : "SERA")));
+        return;
+    }
+
+    for (i = 0; i < MAX_POSTI; i++) {
+        if (turnoaAula->posti[i].stato != Libero &&
+            strcmp(turnoaAula->posti[i].matricola, matricola) == 0) {
+            printf("[AVVISO] Hai gia' una prenotazione al posto %d per il turno corrente.\n", i + 1);
+            return;
+        }
+    }
     {
-        for (int i = 0; i < MAX_POSTI; i++)
-        {
-            if (turnoAula->posti[i].stato == Libero)
-            {
-
-                turnoAula->posti[i].stato = Prenotato;
-
-                turnoAula->orario = *orario;
-
-                strcpy(turnoAula->posti[i].matricola, matricola);
-                strcpuy(turnoAula->data, data);
-
-                turnoAula->posti_occupati++;
-                printf("Prenotazione effettuata con successo per lo studente con matricola %s\n", matricola);
+        CodaAttesa* curr = coda->head;
+        while (curr != NULL) {
+            if (strcmp(curr->studente.Matricola, matricola) == 0 && curr->orario == fascia_scelta) {
+                printf("[AVVISO] Sei gia' in lista d'attesa per la fascia %s.\n",
+                       (fascia_scelta == Mattina ? "MATTINA" : (fascia_scelta == Pomeriggio ? "POMERIGGIO" : "SERA")));
+                return;
             }
+            curr = curr->next;
+        }
+    }
+
+    if (fascia_scelta > turnoaAula->orario) {
+        printf("[PRENOTAZIONE ANTICIPATA] La fascia %s non e' ancora iniziata.\n"
+               "  Verrai inserito in lista d'attesa e avrai priorita' all'apertura del turno.\n",
+               (fascia_scelta == Pomeriggio ? "POMERIGGIO" : "SERA"));
+        aggiungi_in_coda(coda, matricola, turnoaAula->data, fascia_scelta);
+        turnoaAula->prenotazioni++;
+        Scrivi_storico(ListaStudenti, matricola,
+                       (fascia_scelta == Mattina ? "PRENOTAZIONE ANTICIPATA [MATTINA]"
+                       : fascia_scelta == Pomeriggio ? "PRENOTAZIONE ANTICIPATA [POMERIGGIO]"
+                       : "PRENOTAZIONE ANTICIPATA [SERA]"), ora_attuale);
+        return;
+    }
+
+    {
+        int posti_liberi = 0;
+        for (i = 0; i < MAX_POSTI; i++)
+            if (turnoaAula->posti[i].stato == Libero) posti_liberi++;
+
+        if (posti_liberi > 0) {
+            for (i = 0; i < MAX_POSTI; i++) {
+                if (turnoaAula->posti[i].stato == Libero) {
+                    turnoaAula->posti[i].stato = Prenotato;
+                    strncpy(turnoaAula->posti[i].matricola, matricola, 11);
+                    turnoaAula->posti[i].matricola[11] = '\0';
+                    turnoaAula->posti[i].ora_prenotazione = ora_attuale;
+                    turnoaAula->posti_occupati++;
+                    turnoaAula->prenotazioni++;
+
+                    printf("[SUCCESSO] Posto %d prenotato alle %02d:%02d:%02d per la fascia %s.\n",
+                           i + 1, ora_attuale.ora, ora_attuale.minuti, ora_attuale.secondi,
+                           (fascia_scelta == Mattina ? "MATTINA" : (fascia_scelta == Pomeriggio ? "POMERIGGIO" : "SERA")));
+                            Scrivi_storico(ListaStudenti, matricola,
+                       (fascia_scelta == Mattina ? "PRENOTAZIONE [MATTINA]"
+                       : fascia_scelta == Pomeriggio ? "PRENOTAZIONE [POMERIGGIO]"
+                       : "PRENOTAZIONE [SERA]"), ora_attuale);
+                    return;
+                }
+            }
+        } else {
+            printf("[AULA PIENA] Tutti i %d posti sono occupati. Ti inserisco in coda...\n", MAX_POSTI);
+            aggiungi_in_coda(coda, matricola, turnoaAula->data, fascia_scelta);
+            turnoaAula->prenotazioni++;
+                    Scrivi_storico(ListaStudenti, matricola,
+                       (fascia_scelta == Mattina ? "PRENOTAZIONE IN CODA [MATTINA]"
+                       : fascia_scelta == Pomeriggio ? "PRENOTAZIONE IN CODA [POMERIGGIO]"
+                       : "PRENOTAZIONE IN CODA [SERA]"), ora_attuale);
         }
     }
 }
 
+
 /// @brief Permette di aggiungere una nuova prenotazione alla coda
-/// @param Lista Lista in cui aggiungere il nuovo elemento
+/// @param Lista in cui aggiungere il nuovo elemento
 /// @param Nome Nome dello studente che sta effettuando la prenotazione
-/// @param Turno Turno nel quale si sta prenotando lo studente
-/// @param Matricola Matricola dello studente
+/// @param Turno nel quale si sta prenotando lo studente
+/// @param  Matricola dello studente
 /// @return Restituisce l'indirizzo del nuovo elemento salvato nella lista d'attesa
 /// @author Stefano Rosano
 void  aggiungi_in_coda(CodaAttesa* coda, NodoStudente* s, OrarioAula turno,char* data)
@@ -319,6 +523,41 @@ void  aggiungi_in_coda(CodaAttesa* coda, NodoStudente* s, OrarioAula turno,char*
     
 
 
+
+/*
+ * ============================================================================
+ * FUNZIONE: check_in_studenti
+ * ============================================================================
+ * Gestisce il check-in degli studenti prenotati.
+ *
+ * SCOPO:
+ * Confermare la presenza reale dello studente in aula.
+ *
+ * LOGICA:
+ * - verifica la prenotazione;
+ * - controlla la validità della fascia oraria;
+ * - aggiorna lo stato del posto;
+ * - incrementa il numero di presenti.
+ *
+ * PARAMETRI:
+ * - orario:
+ *   fascia oraria corrente.
+ *
+ * - turnoAula:
+ *   struttura contenente i dati del turno.
+ *
+ * - ListaStudenti:
+ *   lista degli studenti registrati.
+ *
+ * - tempo:
+ *   riferimento temporale del check-in.
+ *
+ * VALORE RESTITUITO:
+ * - codice numerico che indica l'esito dell'operazione.
+ *
+ * ============================================================================
+ */
+
 void check_in_studenti( Turno *turnoAula, NodoStudente *ListaStudenti,CodaAttesa *coda,char *matricola,OrarioVirtuale ora_attuale)
 {  
     for (int i = 0; i < MAX_POSTI; i++)
@@ -330,7 +569,7 @@ void check_in_studenti( Turno *turnoAula, NodoStudente *ListaStudenti,CodaAttesa
         }
     }
 
-    /* controllo se esiste gia la matricola, se non esiste fa la registrazione, se c'è un posto libero lo butto dentro
+    /* controllo se esiste gia la matricola, se non esiste fa la registrazione, se c'è un posto libero inserisco nell'aula
     altrimenti va in coda attesa*/
 
 
@@ -476,6 +715,37 @@ void check_in_studenti( Turno *turnoAula, NodoStudente *ListaStudenti,CodaAttesa
 
 // gestione della stampa della lsta studenti da fare//
 
+
+/*
+ * ============================================================================
+ * FUNZIONE: annulla_prenotazione
+ * ============================================================================
+ * Elimina una prenotazione precedentemente effettuata.
+ *
+ * SCOPO:
+ * Consentire allo studente di rinunciare al posto prenotato.
+ *
+ * LOGICA:
+ * - ricerca la prenotazione;
+ * - libera il posto;
+ * - aggiorna statistiche e disponibilità.
+ *
+ * PARAMETRI:
+ * - matricola:
+ *   studente che annulla la prenotazione.
+ *
+ * - data:
+ *   data associata alla prenotazione.
+ *
+ * - orario:
+ *   fascia oraria interessata.
+ *
+ * - turnoAula:
+ *   struttura del turno.
+ *
+ * ============================================================================
+ */
+
 void annulla_prenotazione(char *matricola, OrarioAula *orario, Turno *turnoAula, CodaAttesa *coda, NodoStudente *ListaStudenti, OrarioVirtuale ora_attuale)
 {
       if (turnoAula == NULL || coda == NULL || matricola == NULL) return;
@@ -574,6 +844,8 @@ void annulla_prenotazione(char *matricola, OrarioAula *orario, Turno *turnoAula,
 
 }
 
+
+
 void visualizza_studenti_per_stato(NodoStudente* ListaStudenti, Turno* TurnoAula, CodaAttesa* coda)
 {
     int i;
@@ -631,6 +903,8 @@ void visualizza_studenti_per_stato(NodoStudente* ListaStudenti, Turno* TurnoAula
 
 }
 
+
+
 void visualizza_situazione_corrente(Turno* turnoAula, CodaAttesa* coda) {
     printf("\n--- STUDENTI ATTUALMENTE IN AULA ---\n");
     int cont = 0;
@@ -657,21 +931,53 @@ void visualizza_situazione_corrente(Turno* turnoAula, CodaAttesa* coda) {
     }
 }
 
+/*
+ * Gestisce il checkout degli studenti.
+ *
+ * Quando uno studente lascia l'aula:
+ * - il posto viene liberato;
+ * - i dati statistici vengono aggiornati;
+ * - può essere promosso uno studente dalla coda.
+ */
 
-/*void disponibilita_posti(OrarioAula *orario, Turno *turnoAula)
-{
+/*
+ * ============================================================================
+ * FUNZIONE: check_out_studenti
+ * ============================================================================
+ * Gestisce il checkout degli studenti dall'aula.
+ *
+ * SCOPO:
+ * Liberare il posto occupato dallo studente e aggiornare
+ * lo stato del sistema.
+ *
+ * LOGICA:
+ * - libera il posto occupato;
+ * - aggiorna i contatori del turno;
+ * - aggiorna lo storico;
+ * - gestisce eventuali studenti in attesa.
+ *
+ * PARAMETRI:
+ * - matricola:
+ *   studente che effettua il checkout.
+ *
+ * - orario:
+ *   fascia oraria corrente.
+ *
+ * - orario_virtuale:
+ *   orario simulato del sistema.
+ *
+ * - ultimo_aggiornamento:
+ *   timestamp dell'ultimo aggiornamento.
+ *
+ * - turnoAula:
+ *   struttura dati dell'aula.
+ *
+ * - coda:
+ *   lista d'attesa.
+ *
+ * ============================================================================
+ */
 
-    if (turnoAula->orario == *orario)
-    {
-        int posti_disponibili = MAX_POSTI - turnoAula->posti_occupati;
-        printf("Ci sono %d posti disponibili l'orario %d.\n", posti_disponibili, *orario);
-    }
-    else
-    {
-        printf("Non ci sono prenotazioni per e l'orario %d.\n", *orario);
-    }
-}
-*/
 void check_out_studenti(NodoStudente *ListaStudenti,CodaAttesa *coda,Turno *turnoAula, OrarioVirtuale orario_virtuale,char *matricola)
 {
      if (turnoAula == NULL || coda == NULL || matricola == NULL) return;
@@ -744,6 +1050,49 @@ void check_out_studenti(NodoStudente *ListaStudenti,CodaAttesa *coda,Turno *turn
         printf("\n[ERRORE] La matricola %s non risulta presente in aula.\n", matricola);
 }
 
+/*
+ * Genera il report statistico del turno corrente.
+ *
+ * Il report include:
+ * - numero prenotazioni;
+ * - studenti presenti;
+ * - assenti;
+ * - occupazione aula;
+ * - stato della coda.
+ */
+
+/*
+ * ============================================================================
+ * FUNZIONE: report
+ * ============================================================================
+ * Genera un report statistico relativo al turno corrente.
+ *
+ * SCOPO:
+ * Mostrare informazioni riassuntive sull'utilizzo dell'aula.
+ *
+ * IL REPORT INCLUDE:
+ * - numero prenotazioni;
+ * - studenti presenti;
+ * - studenti assenti;
+ * - percentuale occupazione;
+ * - studenti in lista d'attesa.
+ *
+ * PARAMETRI:
+ * - turnoAula:
+ *   struttura del turno.
+ *
+ * - ListaStudenti:
+ *   lista studenti registrati.
+ *
+ * - coda:
+ *   lista d'attesa.
+ *
+ * - orario:
+ *   fascia oraria analizzata.
+ *
+ * ============================================================================
+ */
+
 void report(Turno *turnoAula, CodaAttesa *coda)
 {
 if (turnoAula == NULL || coda == NULL) return;
@@ -793,6 +1142,31 @@ if (turnoAula == NULL || coda == NULL) return;
     printf("  %.1f%% occupata  [", perc,"]");
 }
 
+/*
+ * Legge e mostra il contenuto dello storico.
+ *
+ * La funzione consente di visualizzare
+ * le operazioni salvate precedentemente.
+ */
+
+/*
+ * ============================================================================
+ * FUNZIONE: leggi_storico
+ * ============================================================================
+ * Legge il contenuto del file storico.
+ *
+ * SCOPO:
+ * Visualizzare tutte le operazioni registrate
+ * nel sistema aula studio.
+ *
+ * LOGICA:
+ * - apre il file storico;
+ * - legge le righe salvate;
+ * - stampa il contenuto a video.
+ *
+ * ============================================================================
+ */
+
 void leggi_storico()
 {
     FILE *file = fopen("storico.txt", "r");
@@ -803,6 +1177,46 @@ void leggi_storico()
         printf("%s", riga);
     }
 }
+
+/*
+ * Scrive le informazioni nello storico accessi.
+ *
+ * Lo storico viene salvato su file per
+ * mantenere traccia delle operazioni effettuate
+ * nel sistema aula studio.
+ */
+
+/*
+ * ============================================================================
+ * FUNZIONE: Scrivi_storico
+ * ============================================================================
+ * Salva le operazioni effettuate nel file storico.
+ *
+ * SCOPO:
+ * Memorizzare permanentemente le attività svolte
+ * dagli studenti nel sistema.
+ *
+ * LOGICA:
+ * - apre il file storico;
+ * - salva data e orario;
+ * - registra operazione e matricola;
+ * - chiude il file.
+ *
+ * PARAMETRI:
+ * - ListaStudenti:
+ *   elenco di tutti studenti.
+ *
+ * - matricola:
+ *   studente associato all'operazione.
+ *
+ * - operazione:
+ *   descrizione dell'azione eseguita.
+ *
+ * - ora:
+ *   orario virtuale dell'operazione.
+ *
+ * ============================================================================
+ */
 
 void Scrivi_storico(NodoStudente *ListaStudenti,char*matricola,char* operazione,OrarioVirtuale ora)
 {
@@ -859,6 +1273,49 @@ void visualizza_lista(CodaAttesa *elemento)
 /// @author Stefano Rosano
 
 
+
+/*
+ * Gestisce il cambio automatico della fascia oraria.
+ *
+ * La funzione aggiorna:
+ * - stato dei posti;
+ * - prenotazioni;
+ * - studenti presenti;
+ * - lista d'attesa.
+ *
+ * Questo permette la sincronizzazione automatica
+ * dei turni dell'aula studio.
+ */
+
+/*
+ * ============================================================================
+ * FUNZIONE: cambio_fascia_automatica
+ * ============================================================================
+ * Gestisce automaticamente il passaggio tra le fasce orarie.
+ *
+ * SCOPO:
+ * Aggiornare completamente lo stato del sistema
+ * quando termina un turno.
+ *
+ * LOGICA:
+ * - chiude il turno corrente;
+ * - libera i posti;
+ * - registra assenti;
+ * - aggiorna la lista d'attesa;
+ * - inizializza il nuovo turno.
+ *
+ * PARAMETRI:
+ * - Turnoaula:
+ *   stato corrente dell'aula.
+ *
+ * - coda:
+ *   lista studenti in attesa.
+ *
+ * - nuova_fascia:
+ *   nuova fascia oraria da attivare.
+ *
+ * ============================================================================
+ */
 
 void cambio_fascia_automatica(Turno *Turnoaula,NodoStudente *s, CodaAttesa *coda, OrarioAula nuova_fascia)
 {
@@ -1067,6 +1524,42 @@ int is_orario_valido(OrarioVirtuale adesso, OrarioAula orario)
  *       cambio_fascia_automatica con la nuova fascia corretta.
  */
 
+/*
+ * Aggiorna l'orario virtuale del sistema.
+ *
+ * Il tempo virtuale viene accelerato rispetto
+ * al tempo reale per simulare rapidamente
+ * il passaggio delle fasce orarie.
+ */
+
+/*
+ * ============================================================================
+ * FUNZIONE: aggiorna_orario_automatico
+ * ============================================================================
+ * Aggiorna automaticamente l'orario virtuale del sistema.
+ *
+ * SCOPO:
+ * Simulare il passaggio del tempo in modo accelerato.
+ *
+ * LOGICA:
+ * - calcola il tempo trascorso;
+ * - aggiorna secondi, minuti e ore;
+ * - verifica eventuali cambi fascia;
+ * - richiama il cambio turno automatico.
+ *
+ * PARAMETRI:
+ * - ora:
+ *   orario virtuale corrente.
+ *
+ * - ultimo_aggiornamento:
+ *   riferimento temporale reale.
+ *
+ * - Turnoaula:
+ *   struttura contenente i dati dell'aula.
+ *
+ * ============================================================================
+ */
+
 void aggiorna_orario_automatico(OrarioVirtuale *ora, time_t *ultimo_aggiornamento, Turno *Turnoaula, CodaAttesa *coda, NodoStudente *s)
 {
     time_t adesso = time(NULL);
@@ -1110,7 +1603,7 @@ void aggiorna_orario_automatico(OrarioVirtuale *ora, time_t *ultimo_aggiornament
 
 
 
-void inizializza_sistema(NodoStudente *ListaStudenti,Turno* turnoAula, CodaAttesa* coda) {
+void inizializza_strutture(NodoStudente *ListaStudenti,Turno* turnoAula, CodaAttesa* coda) {
     // 1. Controllo di sicurezza: evitiamo crash se passiamo puntatori NULL
     if (ListaStudenti == NULL || turnoAula == NULL || coda == NULL) {
         fprintf(stderr, "[ERRORE] Puntatori non validi in inizializzazione!\n");
@@ -1157,8 +1650,8 @@ void inizializza_sistema(NodoStudente *ListaStudenti,Turno* turnoAula, CodaAttes
 
 
 
-void inizializza_sistema_dinamico(NodoStudente** ListaStudenti, Turno** Turnoaula, CodaAttesa** coda) {
-    /* Allocazione delle strutture opache */
+void alloca_memoria_strutture(NodoStudente** ListaStudenti, Turno** Turnoaula, CodaAttesa** coda) {
+    /* Allocazione delle strutture */
     *ListaStudenti = (NodoStudente*)malloc(sizeof(NodoStudente));
     *Turnoaula = (Turno*)malloc(sizeof(Turno));
     *coda = (CodaAttesa*)malloc(sizeof(CodaAttesa));
@@ -1168,6 +1661,5 @@ void inizializza_sistema_dinamico(NodoStudente** ListaStudenti, Turno** Turnoaul
         exit(1);
     }
 
-    inizializza_sistema(*ListaStudenti, *Turnoaula, *coda); /* Chiama quella che hai gia' scritto */
-}
+    inizializza_strutture(*ListaStudenti, *Turnoaula, *coda); }
 
