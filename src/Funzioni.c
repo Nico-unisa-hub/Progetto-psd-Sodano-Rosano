@@ -870,6 +870,7 @@ void report(Turno *turnoAula, CodaAttesa *coda)
         else if (turnoAula->posti[i].stato == Prenotato) prenotati_ora++;
     }
 
+
     /* Percentuale di occupazione rispetto alla capienza massima */
     float perc = (MAX_POSTI > 0) ?
         ((float)(presenti_ora + prenotati_ora) / MAX_POSTI) * 100.0f : 0.0f;
@@ -886,6 +887,7 @@ void report(Turno *turnoAula, CodaAttesa *coda)
     printf("  Assenti (prenotati non arrivati): %d\n", turnoAula->assenti);
     printf("  Rimasti in attesa (espulsi)    : %d\n",  turnoAula->esplusi_dalla_coda);
 
+
     printf("\n--- SNAPSHOT ISTANTANEO -------------------\n");
     printf("  Presenti in aula ora           : %d\n",   presenti_ora);
     printf("  Prenotati non ancora arrivati  : %d\n",   prenotati_ora);
@@ -900,6 +902,9 @@ void report(Turno *turnoAula, CodaAttesa *coda)
 
     printf("\n--- SATURAZIONE AULA ----------------------\n");
     printf("  %.1f%% occupata\n", perc);
+
+ 
+
 
     leggi_storico();
 }

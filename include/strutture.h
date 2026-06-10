@@ -43,6 +43,7 @@ typedef struct {
     char CorsoLaurea[MAX_CORSO_LAU];
 } Studente;
 
+/* Tag esplicito per permettere il self-reference nella struttura */
 typedef struct NodoStudente {
     Studente dato;
     struct NodoStudente *next;
